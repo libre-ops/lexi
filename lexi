@@ -103,14 +103,8 @@ case $command in
       exit 0
     fi
     ;;
-  "stop")
-    lxc stop $container
-    ;;
-  "pause")
-    lxc pause $container
-    ;;
-  "info")
-    lxc info $container
+  "stop"|"pause"|"info")
+    lxc $1 $container
     ;;
   "snapshot")
     lxc snapshot $container $2
@@ -130,9 +124,6 @@ case $command in
       snapshot="snap0"
     fi
     lxc restore $container $snapshot
-    ;;
-  "pause")
-    lxc pause $container
     ;;
   "login")
     # Allow second argument to be passed to override $default_user
