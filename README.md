@@ -21,7 +21,7 @@ Some installation instructions for LXD are here: https://linuxcontainers.org/lxd
 ##### TLDR version:
 `$ sudo apt install snap`        # install snap \
 `$ sudo snap install lxd`        # install LXD (includes LXC) \
-`$ sudo lxd init`                # runs the wizard for initial LXD setup; hit enter for defaults
+`$ sudo lxd init`                # runs the wizard for initial LXD setup; hit enter for defaults \
 `$ sudo usermod -aG lxd $USER`   # Add current user to `lxd` group \
 `$ su - $USER`                   # Pick up groups changes for current user (or log out and back in)
 
@@ -41,7 +41,7 @@ See [local config README](.lexi/README.md)
 
 Lexi provides an alternative CLI for `lxc`. All `lexi` commands are based on the standard `lxc` interface, with the following adjustments and extras:
 
-##### Quick Commands
+#### Quick Commands
 
 Instead of having to remember the specific image you use in the current project, or constantly having to remember and re-type 
 the container name in each command, `lexi` pulls these from your local configs and handles it for you.
@@ -57,7 +57,7 @@ $ lexi launch
 
 The same pattern above is applied to all common `lxc` commands, such as `start`,`stop`,`delete`, `info`, etc...
 
-##### Nice Fallbacks
+#### Nice Fallbacks
 
 `lexi` also adds some helpful automated additions, for example;
 
@@ -65,7 +65,9 @@ If you run `$ lexi start` but the container hasn't been created yet, it will lau
 
 `$ lexi delete` will use the `--force` flag by default, instead of throwing an error if the container is running and forcing you to manually retype the command with `--force`.
 
-#### New Additions
+#### New Commands
+
+##### lexi ssh
 
 If you're using an image that supports `cloud-init` (such as `ubuntu:18.04`), `lexi` will add your public SSH key to the container on launch, 
 and provides the following command (which will directly connect via SSH to the container):
@@ -80,6 +82,8 @@ This will connect using the `default_user` defined in your configs, but can take
 $ lexi ssh root
 ```
 
+##### lexi login
+
 To get a simpler shell in the container (without SSH) you can use:
 
 ```
@@ -88,35 +92,35 @@ $ lexi login
 
 As with the `lexi ssh` (above), this logs in as the `default_user` defined in the local configs, but can be overridden by passing a specific user as the second argument.
 
+##### lexi recreate
+
 ```
 $ lexi recreate
 ```
 
 The above command will force-delete the current container and re-launch a fresh instance.
 
-##### Snapshots
+#### Snapshots
 
 `$ lexi snapshot`, `$ lexi restore`, and `$ lexi delete-snapshot` will all default to using `snap0` if no snapshot is specified,
 or can all take a snapshot name as second argument, eg:
 
 ```
-$ lexy snapshot test-snapshot
+$ lexi snapshot test-snapshot
 ```
 
 You can use `$ lexi info` to check info on the current container, including a list of snapshots.
 
-##### Static IPs
+#### Static IPs
 
 Defining a static local IP means that (for example) entries for the container can be easily added to Ansible projects.
 See the [local config README](.lexi/README.md) for more details.
 
-##### Standard Interface
+#### Standard Interface
 
 The standard `lxc` commands are untouched and can still be used as normal for any complex operations, like editing network configurations.
 
 
---------
+## Acknowledgements
 
-#### Acknowledgements
-
-Inspired by https://github.com/coopdevs/devenv
+Inspired partly by [devenv](https://github.com/coopdevs/devenv) and partly by the ease-of-use of old Virtual Machine software like **Vagrant**.
