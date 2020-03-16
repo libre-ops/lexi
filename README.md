@@ -113,3 +113,10 @@ See the [local config README](.lexi/README.md) for more details.
 ##### Standard Interface
 
 The standard `lxc` commands are untouched and can still be used as normal for any complex operations, like editing network configurations.
+
+
+--------
+
+#### Acknowledgements
+
+Inspired by https://github.com/coopdevs/devenv
