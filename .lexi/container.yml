@@ -1,0 +1,5 @@
+# Lexi container config
+container: lexi-example
+image: ubuntu:18.04
+default_user: lexi
+container_ip: 10.10.100.254

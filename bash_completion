@@ -1,0 +1,2 @@
+#/usr/bin/env bash
+complete -W "setup start stop delete ssh login launch list pause info snapshot restore recreate" lexi

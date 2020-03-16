@@ -1,0 +1,12 @@
+#cloud-config
+users:
+  - name: root
+    ssh-authorized-keys:
+      - $LEXI_SSH_KEY            # Add SSH key to root user
+  - name: $LEXI_USER             # Add default_user to container
+    shell: /bin/bash
+    sudo: ALL=(ALL) NOPASSWD:ALL # Give user password-less sudo
+    ssh-authorized-keys:
+      - $LEXI_SSH_KEY            # Add SSH key to new user
+packages:
+  - sudo                         # Example apt package to install

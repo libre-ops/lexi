@@ -1,0 +1,158 @@
+#!/bin/bash
+
+# Set some defaults (overriden by local configs)
+container="lexi-example"
+image="ubuntu:18.04"
+container_ip="10.10.100.254"
+default_user="lexi"
+ssh_key=$(cat ~/.ssh/id_rsa.pub)
+
+network_name="lexibr0"
+network_address="10.10.100.1"
+
+function check_exists {
+  exists=$(lexi list | grep "| $container |")
+
+  if [ ! -z "$exists" ]; then
+    echo "Lexi: container '$container' already exists"
+    exit 0
+  fi
+}
+
+function check_running {
+  running=$(lexi list | grep "| $container | RUNNING")
+
+  if [ ! -z "$exists" ]; then
+    echo "Lexi: container '$container' is already running"
+    exit 0
+  fi
+}
+
+function lexi_launch {
+  export LEXI_CONTAINER_IP=$container_ip
+  export LEXI_CONTAINER_GATEWAY=$network_address
+  export LEXI_USER=$default_user
+  export LEXI_SSH_KEY=$ssh_key
+
+  echo "Lexi: initializing container '$container' with image '$image'"
+  lxc init $image $container \
+    -c user.network-config="$(envsubst < $(pwd)/.lexi/network.yml | cat)" \
+    -c user.vendor-data="$(envsubst < $(pwd)/.lexi/users.yml | cat)"
+  echo "Lexi: attaching network '$network_name'"
+  lxc network attach $network_name $container eth0
+  echo "Lexi: configuring network interface with IP: $container_ip"
+  lxc config device set $container eth0 ipv4.address $container_ip
+  lxc start $container
+}
+
+function lexi_delete {
+  echo "Lexi: deleting container '$container'"
+  lxc delete $container --force
+}
+
+function parse_yaml {
+  local prefix=$2
+  local s='[[:space:]]*' w='[a-zA-Z0-9_]*' fs=$(echo @|tr @ '\034')
+  sed -ne "s|^\($s\):|\1|" \
+      -e "s|^\($s\)\($w\)$s:$s[\"']\(.*\)[\"']$s\$|\1$fs\2$fs\3|p" \
+      -e "s|^\($s\)\($w\)$s:$s\(.*\)$s\$|\1$fs\2$fs\3|p"  $1 |
+  awk -F$fs '{
+    indent = length($1)/2;
+    vname[indent] = $2;
+    for (i in vname) {if (i > indent) {delete vname[i]}}
+    if (length($3) > 0) {
+      vn=""; for (i=0; i<indent; i++) {vn=(vn)(vname[i])("_")}
+      printf("%s%s%s=\"%s\"\n", "'$prefix'",vn, $2, $3);
+    }
+  }'
+}
+
+# Import configs from local .lexi directory
+if [ -f "$(pwd)/.lexi/container.yml" ]; then
+  eval $(parse_yaml $(pwd)/.lexi/container.yml)
+else
+  echo "Lexi: container config file not found"
+  exit 1
+fi
+
+# Wrap and extend lxc CLI
+command="$1"
+case $command in
+  "setup")
+    echo "Lexi: creating network '$network_name'"
+    lxc network create $network_name ipv6.address=none ipv4.address=${network_address}/24 ipv4.nat=true
+    ;;
+  "launch")
+    check_exists
+    check_running
+    lexi_launch
+	  ;;
+	"start")
+	  check_running
+
+    echo "Lexi: starting container '$container'"
+	  start_response=$(lxc start $container 2>&1)
+
+    if [[ "$start_response" =~ "not found" ]]; then
+      echo "Lexi: container not found"
+      lexi_launch
+      exit 0
+    fi
+    ;;
+  "stop")
+    lxc stop $container
+    ;;
+  "pause")
+    lxc pause $container
+    ;;
+  "info")
+    lxc info $container
+    ;;
+  "snapshot")
+    lxc snapshot $container $2
+    ;;
+  "delete-snapshot")
+    if [ ! -z "$2" ]; then
+      snapshot=$2
+    else
+      snapshot="snap0"
+    fi
+    lxc delete $container/$snapshot
+    ;;
+  "restore")
+    if [ ! -z "$2" ]; then
+      snapshot=$2
+    else
+      snapshot="snap0"
+    fi
+    lxc restore $container $snapshot
+    ;;
+  "pause")
+    lxc pause $container
+    ;;
+  "login")
+    # Allow second argument to be passed to override $default_user
+    if [ ! -z "$2" ]; then
+      default_user=$2
+    fi
+    lxc exec $container -- sudo --user $default_user --login
+    ;;
+  "ssh")
+    if [ ! -z "$2" ]; then
+      default_user=$2
+    fi
+    ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=ERROR ${default_user}@${container_ip}
+    ;;
+  "delete")
+    lexi_delete
+	  ;;
+	"recreate")
+    lexi_delete
+	  lexi_launch
+	  ;;
+  *)
+    lxc "$@"
+    ;;
+esac
+
+exit 0
