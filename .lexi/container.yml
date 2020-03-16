@@ -1,5 +1,14 @@
-# Lexi container config
+# Lexy container configs (required)
+
 container: lexi-example
 image: ubuntu:18.04
 default_user: lexi
 container_ip: 10.10.100.254
+
+# Optional configs
+
+#ssh_key:
+#network_name:
+#network_address:
+#host_share_path:
+#guest_share_path:

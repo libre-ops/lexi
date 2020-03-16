@@ -42,6 +42,10 @@ function lexi_launch {
   lxc network attach $network_name $container eth0
   echo "Lexi: configuring network interface with IP: $container_ip"
   lxc config device set $container eth0 ipv4.address $container_ip
+  if [ -n "$host_share_path" ] && [ -n "$guest_share_path" ]; then
+    echo "Lexi: adding shared directory: (host) $host_share_path -> (guest) $guest_share_path"
+    lxc config device add $container ${container}-share disk source=$host_share_path path=$guest_share_path
+  fi
   lxc start $container
 }
 

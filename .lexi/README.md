@@ -22,6 +22,8 @@ Optional variables:
 - **ssh_key:** pulls in `~/.ssh/id_rsa.pub` by default. Can be set to a string, eg: `ssh-rsa AAAAB3 ...`
 - **network_name:** name of the default network bridge used by Lexi. Defaults to `lexibr0`.
 - **network_address:** IP for the default network bridge used by Lexi. Defaults to `10.10.100.1`
+- **host_share_path:** define a local path on the host to be mounted in the guest, eg: `/home/user/my-local-project`
+- **guest_share_path:** define a destination path on the guest for shared mount, eg: `/home/lexi/project`
 
 #### network.yml
 
