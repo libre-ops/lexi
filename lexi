@@ -146,6 +146,7 @@ case $command in
 	  lexi_launch
 	  ;;
   *)
+    # Pass anything else directly to lxc, eg: lexi list -> lxc list
     lxc "$@"
     ;;
 esac
