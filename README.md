@@ -9,6 +9,8 @@ This means project-specific configs can be easily shared across teams.
 
 It also wraps the standard CLI for LXC, greatly simplifying common commands and providing a few enhancements and additions. 
 
+![](lexi.gif)
+
 See **Usage** section below for more details.
 
 ## Setting up LXD/LXC
@@ -131,7 +133,7 @@ info for the current container (including snapshots) with `$ lexi info`.
 #### Bash Completion
 
 If you have **bash completion** enabled, Lexi implements tab-completion for all of it's commands,
-so if you type `$ lexi snapshot` and hit <tab><tab>, you'll see:
+so if you type `$ lexi snapshot` and hit `<tab><tab>`, you'll see:
 ```
 $ lexi snapshot
 snapshot    snapshot-list   shapshot-delete     snapshot-restore 
