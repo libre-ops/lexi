@@ -29,6 +29,13 @@ Searchable **LXD docs** are here: https://lxd.readthedocs.io/en/latest/
 
 ## Lexi Setup
 
+##### Dependencies
+
+Lexi requires `jq`, a small library for parsing json. \
+Install with: `$ sudo apt install jq`
+
+##### Setup
+
 - Clone this repo and run `$ sudo make install`
 - Copy the example `/.lexi` directory into any project and edit the YAML files to taste
 - Run `$ lexi setup` to create the network bridge used by `lexi`. This should only be needed once.
@@ -100,16 +107,35 @@ $ lexi recreate
 
 The above command will force-delete the current container and re-launch a fresh instance.
 
-#### Snapshots
+#### Snapshot Management
 
-`$ lexi snapshot`, `$ lexi restore`, and `$ lexi delete-snapshot` will all default to using `snap0` if no snapshot is specified,
-or can all take a snapshot name as second argument, eg:
+Snaphot management can be done with the following (adjusted/added) commands:
+
+- `lexi snapshot`
+- `lexi snapshot-delete`
+- `lexi snapshot-restore` or `lexi restore`
+
+As before, the basic `snapshot` command will default to creating snaphots named `snap0`, `snap1`,
+`snap2` etc if no name is supplied as the second argument.
+
+The `snapshot-delete` and `snapshot-restore` (or `restore`) commands will default to using the most recent snapshot,
+or can take a snapshot name as second argument, eg:
 
 ```
-$ lexi snapshot test-snapshot
+$ lexi snapshot-restore example-snapshot
 ```
 
-You can use `$ lexi info` to check info on the current container, including a list of snapshots.
+You can list available snapshots for the current container with `$ lexi snapshot-list`, or see the full
+info for the current container (including snapshots) with `$ lexi info`.
+
+#### Bash Completion
+
+If you have **bash completion** enabled, Lexi implements tab-completion for all of it's commands,
+so if you type `$ lexi snapshot` and hit <tab><tab>, you'll see:
+```
+$ lexi snapshot
+snapshot    snapshot-list   shapshot-delete     snapshot-restore 
+```
 
 #### Static IPs
 

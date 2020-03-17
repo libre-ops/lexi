@@ -54,6 +54,14 @@ function lexi_delete {
   lxc delete $container --force
 }
 
+function list_snapshots {
+  echo $(lxc list $container --format json | jq -r ".[].snapshots[].name")
+}
+
+function last_snapshot {
+  echo $(lxc list $container --format json | jq -r ".[].snapshots[-1].name")
+}
+
 function parse_yaml {
   local prefix=$2
   local s='[[:space:]]*' w='[a-zA-Z0-9_]*' fs=$(echo @|tr @ '\034')
@@ -109,21 +117,26 @@ case $command in
   "snapshot")
     lxc snapshot $container $2
     ;;
-  "delete-snapshot")
+  "snapshot-delete")
     if [ ! -z "$2" ]; then
       snapshot=$2
     else
-      snapshot="snap0"
+      snapshot=$(last_snapshot)
     fi
+    echo "Lexi: deleting snapshot $snapshot..."
     lxc delete $container/$snapshot
     ;;
-  "restore")
+  "restore"|"snapshot-restore")
     if [ ! -z "$2" ]; then
       snapshot=$2
     else
-      snapshot="snap0"
+      snapshot=$(last_snapshot)
     fi
+    echo "Lexi: restoring snapshot $snapshot..."
     lxc restore $container $snapshot
+    ;;
+  "snapshot-list")
+    list_snapshots
     ;;
   "login")
     # Allow second argument to be passed to override $default_user
