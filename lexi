@@ -116,6 +116,9 @@ case $command in
     ;;
   "snapshot")
     lxc snapshot $container $2
+    if [ 0 == $? ]; then
+      echo "Lexi: snapshot '$(last_snapshot)' saved"
+    fi
     ;;
   "snapshot-delete")
     if [ ! -z "$2" ]; then
@@ -123,7 +126,7 @@ case $command in
     else
       snapshot=$(last_snapshot)
     fi
-    echo "Lexi: deleting snapshot $snapshot..."
+    echo "Lexi: deleting snapshot '$snapshot'..."
     lxc delete $container/$snapshot
     ;;
   "restore"|"snapshot-restore")
@@ -132,7 +135,7 @@ case $command in
     else
       snapshot=$(last_snapshot)
     fi
-    echo "Lexi: restoring snapshot $snapshot..."
+    echo "Lexi: restoring snapshot '$snapshot'..."
     lxc restore $container $snapshot
     ;;
   "snapshot-list")
