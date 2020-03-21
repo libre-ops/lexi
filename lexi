@@ -28,6 +28,50 @@ function check_running {
   fi
 }
 
+function setup_uid_map {
+  echo "Lexi: configuring uid maps"
+
+  if grep -Fq "lxd:" /etc/subuid; then
+    echo "Lexi: subuid mapping for 'lxd:' already exists... ignoring"
+  else
+    echo "lxd:$(id -u):1" | sudo tee -a /etc/subuid 2>&1
+  fi
+
+  if grep -Fq "root:" /etc/subuid; then
+    echo "Lexi: subuid mapping for 'root:' already exists... ignoring"
+  else
+    echo "root:$(id -u):1" | sudo tee -a /etc/subuid 2>&1
+  fi
+
+  echo "Lexi: configuring gid maps"
+
+  if grep -Fq "lxd:" /etc/subgid; then
+    echo "Lexi: subgid mapping for 'lxd:' already exists... ignoring"
+  else
+    printf "lxd:$(id -g):1\n" | sudo tee -a /etc/subgid 2>&1
+  fi
+
+  if grep -Fq "root:" /etc/subgid; then
+    echo "Lexi: subgid mapping for 'root:' already exists... ignoring"
+  else
+    printf "root:$(id -g):1\n" | sudo tee -a /etc/subgid 2>&1
+  fi
+}
+
+function apply_uid_mapping {
+  if [ -n "$host_share_path" ] && [ -n "$guest_share_path" ]; then
+    echo "Lexi: applying uid mappings for shared directory"
+    printf "uid $(id -u) 1000\ngid $(id -g) 1000" | lxc config set $container raw.idmap -
+  fi
+}
+
+function mount_shared_directory {
+  if [ -n "$host_share_path" ] && [ -n "$guest_share_path" ]; then
+    echo "Lexi: adding shared directory: (host) $host_share_path -> (guest) $guest_share_path"
+    lxc config device add $container ${container}-share disk source=$host_share_path path=$guest_share_path
+  fi
+}
+
 function lexi_launch {
   export LEXI_CONTAINER_IP=$container_ip
   export LEXI_CONTAINER_GATEWAY=$network_address
@@ -42,10 +86,8 @@ function lexi_launch {
   lxc network attach $network_name $container eth0
   echo "Lexi: configuring network interface with IP: $container_ip"
   lxc config device set $container eth0 ipv4.address $container_ip
-  if [ -n "$host_share_path" ] && [ -n "$guest_share_path" ]; then
-    echo "Lexi: adding shared directory: (host) $host_share_path -> (guest) $guest_share_path"
-    lxc config device add $container ${container}-share disk source=$host_share_path path=$guest_share_path
-  fi
+  apply_uid_mapping
+  mount_shared_directory
   lxc start $container
 }
 
@@ -93,6 +135,11 @@ case $command in
   "setup")
     echo "Lexi: creating network '$network_name'"
     lxc network create $network_name ipv6.address=none ipv4.address=${network_address}/24 ipv4.nat=true
+    setup_uid_map
+    echo
+    echo "Setup complete. Restart LXD to apply user mapping configuration."
+    echo "Snap version: 'systemctl reload snap.lxd.daemon'"
+    echo "Non-Snap version: 'sudo systemctl restart lxd'"
     ;;
   "launch")
     check_exists
