@@ -42,6 +42,22 @@ Install with: `$ sudo apt install jq`
 - Copy the example `/.lexi` directory into any project and edit the YAML files to taste
 - Run `$ lexi setup` to create the network bridge used by `lexi`. This should only be needed once.
 
+##### Shared directories
+
+Lexi uses `shiftfs` for managing user mappings on directories shared between the host and the container.
+
+This requires a recent Linux kernel on the host (5+) which is present in Ubuntu 18 and above.
+
+To check if you have `shiftfs` enabled, do: `$ modinfo shiftfs`.
+
+To enable `shiftfs` with LXD (snap version), do:
+```
+$ sudo snap set lxd shiftfs.enable=true
+$ sudo systemctl reload snap.lxd.daemon
+```
+
+For more info on `shiftfs` see [this post](https://discuss.linuxcontainers.org/t/trying-out-shiftfs/5155).
+
 ## Config Files
 
 See [local config README](.lexi/README.md)
